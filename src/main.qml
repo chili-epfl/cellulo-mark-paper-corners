@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.3
+import ch.epfl.chili.fileio 1.0
 
 ApplicationWindow {
     visible: true
@@ -34,7 +35,7 @@ ApplicationWindow {
 
                 Button {
                     text: "Open..."
-                    onClicked: fileDialog.open();
+                    onClicked: imageFileDialog.open();
                 }
             }
         }
@@ -63,25 +64,9 @@ ApplicationWindow {
                             coordText.yCoord = mouseY;
                         }
                         onClicked: {
-                            if (topLeftText.font.bold) {
-                                topLeftText.text = mouseX + ", " + mouseY;
-                                topLeftText.font.bold = false;
-                                topRightText.font.bold = true;
-                            }
-                            else if (topRightText.font.bold) {
-                                topRightText.text = mouseX + ", " + mouseY;
-                                topRightText.font.bold = false;
-                                bottomRightText.font.bold = true;
-                            }
-                            else if (bottomRightText.font.bold) {
-                                bottomRightText.text = mouseX + ", " + mouseY;
-                                bottomRightText.font.bold = false;
-                                bottomLeftText.font.bold = true;
-                            }
-                            else if (bottomLeftText.font.bold) {
-                                bottomLeftText.text = mouseX + ", " + mouseY;
-                                bottomLeftText.font.bold = false;
-                            }
+                            coordRepeater.itemAt(choiceLayout.currentStep).text = "[" + mouseX + ", " + mouseY + "]";
+                            if (choiceLayout.currentStep < 3)
+                                choiceLayout.currentStep += 1;
                         }
                     }
                 }
@@ -114,53 +99,70 @@ ApplicationWindow {
                 id: choiceLayout
                 anchors.fill: parent
 
-                Text {
-                    id: topLeftText
-                    property int topLeft: 0
-                    font.bold: true
-                    text: qsTr("Choose top-left")
-                }
+                property int currentStep: 0
 
-                Text {
-                    id: topRightText
-                    property int topRight: 0
-                    text: qsTr("Choose top-right")
-                }
+                Repeater {
+                    id: coordRepeater
+                    model: ["Choose top-left", "Choose top-right", "Choose bottom-right", "Choose bottom-left"]
 
-                Text {
-                    id: bottomRightText
-                    property int bottomRight: 0
-                    text: qsTr("Choose bottom-right")
-                }
-
-                Text {
-                    id: bottomLeftText
-                    property int bottomLeft: 0
-                    text: qsTr("Choose bottom-left")
+                    Text {
+                        id: topLeftText
+                        property int topLeft: 0
+                        font.bold: choiceLayout.currentStep == index
+                        text: modelData
+                    }
                 }
 
                 Button {
                     text: "Undo"
-                    // onClicked: fileDialog.open();
+                    onClicked: {
+                        if (choiceLayout.currentStep == 0)
+                            return;
+
+                        choiceLayout.currentStep -= 1;
+                        coordRepeater.itemAt(choiceLayout.currentStep).text = coordRepeater.model[choiceLayout.currentStep];
+                    }
                 }
 
 
                 Button {
                     text: "Save..."
-                    // onClicked: fileDialog.open();
+                    onClicked: outputFileDialog.open();
                 }
             }
         }
     }
 
     FileDialog {
-        id: fileDialog
+        id: imageFileDialog
 
         title: "Please choose an image"
         modality: Qt.WindowModal
+        selectMultiple: false
 
         nameFilters: [ "Image files (*.jpg *.png)" ]
 
-        onAccepted: imagePath.text = fileDialog.fileUrls[0]
+        onAccepted: imagePath.text = imageFileDialog.fileUrl
+    }
+
+    FileDialog {
+        id: outputFileDialog
+
+        title: "Please choose an output file"
+        modality: Qt.WindowModal
+        selectExisting: false
+        selectMultiple: false
+
+        nameFilters: [ "All files (*)" ]
+
+        onAccepted: {
+            console.log("Writing output to \"" + outputFileDialog.fileUrl + "\"");
+            fileIo.setPath(outputFileDialog.fileUrl);
+            fileIo.write(topLeftText.text + ", " + topRightText.text + ", " + bottomRightText.text + ", " + bottomLeftText.text)
+        }
+    }
+
+    FileIo {
+        id: fileIo
     }
 }
