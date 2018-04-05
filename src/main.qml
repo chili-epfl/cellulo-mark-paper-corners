@@ -47,9 +47,108 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            Image {
-                id: image
-                source: imagePath.text
+            ScrollView {
+                anchors.fill: parent
+
+                Image {
+                    id: image
+                    source: imagePath.text
+                    fillMode: Image.Pad
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onPositionChanged: {
+                            coordText.xCoord = mouseX;
+                            coordText.yCoord = mouseY;
+                        }
+                        onClicked: {
+                            if (topLeftText.font.bold) {
+                                topLeftText.text = mouseX + ", " + mouseY;
+                                topLeftText.font.bold = false;
+                                topRightText.font.bold = true;
+                            }
+                            else if (topRightText.font.bold) {
+                                topRightText.text = mouseX + ", " + mouseY;
+                                topRightText.font.bold = false;
+                                bottomRightText.font.bold = true;
+                            }
+                            else if (bottomRightText.font.bold) {
+                                bottomRightText.text = mouseX + ", " + mouseY;
+                                bottomRightText.font.bold = false;
+                                bottomLeftText.font.bold = true;
+                            }
+                            else if (bottomLeftText.font.bold) {
+                                bottomLeftText.text = mouseX + ", " + mouseY;
+                                bottomLeftText.font.bold = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        GroupBox {
+            id: coordBox
+            Layout.fillWidth: true
+
+            RowLayout {
+                id: coordLayout
+                anchors.fill: parent
+
+                Text {
+                    id: coordText
+                    property int xCoord: 0
+                    property int yCoord: 0
+
+                    text: "(" + xCoord + ", " + yCoord + ")"
+                }
+            }
+        }
+
+        GroupBox {
+            id: choiceBox
+            Layout.fillWidth: true
+
+            RowLayout {
+                id: choiceLayout
+                anchors.fill: parent
+
+                Text {
+                    id: topLeftText
+                    property int topLeft: 0
+                    font.bold: true
+                    text: qsTr("Choose top-left")
+                }
+
+                Text {
+                    id: topRightText
+                    property int topRight: 0
+                    text: qsTr("Choose top-right")
+                }
+
+                Text {
+                    id: bottomRightText
+                    property int bottomRight: 0
+                    text: qsTr("Choose bottom-right")
+                }
+
+                Text {
+                    id: bottomLeftText
+                    property int bottomLeft: 0
+                    text: qsTr("Choose bottom-left")
+                }
+
+                Button {
+                    text: "Undo"
+                    // onClicked: fileDialog.open();
+                }
+
+
+                Button {
+                    text: "Save..."
+                    // onClicked: fileDialog.open();
+                }
             }
         }
     }
@@ -60,7 +159,6 @@ ApplicationWindow {
         title: "Please choose an image"
         modality: Qt.WindowModal
 
-        folder: shortcuts.home
         nameFilters: [ "Image files (*.jpg *.png)" ]
 
         onAccepted: imagePath.text = fileDialog.fileUrls[0]
