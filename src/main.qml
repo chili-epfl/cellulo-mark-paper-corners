@@ -67,6 +67,7 @@ ApplicationWindow {
                             coordRepeater.itemAt(choiceLayout.currentStep).text = "[" + mouseX + ", " + mouseY + "]";
                             if (choiceLayout.currentStep < 3)
                                 choiceLayout.currentStep += 1;
+                            else choiceLayout.done = true;
                         }
                     }
                 }
@@ -100,6 +101,7 @@ ApplicationWindow {
                 anchors.fill: parent
 
                 property int currentStep: 0
+                property bool done: false
 
                 Repeater {
                     id: coordRepeater
@@ -119,7 +121,11 @@ ApplicationWindow {
                         if (choiceLayout.currentStep == 0)
                             return;
 
-                        choiceLayout.currentStep -= 1;
+                        if (choiceLayout.done)
+                            choiceLayout.done = false
+                        else
+                            choiceLayout.currentStep -= 1;
+
                         coordRepeater.itemAt(choiceLayout.currentStep).text = coordRepeater.model[choiceLayout.currentStep];
                     }
                 }
@@ -127,6 +133,7 @@ ApplicationWindow {
 
                 Button {
                     text: "Save..."
+                    enabled: choiceLayout.done
                     onClicked: outputFileDialog.open();
                 }
             }
@@ -158,11 +165,16 @@ ApplicationWindow {
         onAccepted: {
             console.log("Writing output to \"" + outputFileDialog.fileUrl + "\"");
             fileIo.setPath(outputFileDialog.fileUrl);
-            fileIo.write(topLeftText.text + ", " + topRightText.text + ", " + bottomRightText.text + ", " + bottomLeftText.text)
+            fileIo.write("\"coords\" : [" + 
+                coordRepeater.itemAt(0).text + ", " + 
+                coordRepeater.itemAt(1).text + ", " + 
+                coordRepeater.itemAt(2).text + ", " + 
+                coordRepeater.itemAt(0).text + "]\n")
         }
     }
 
     FileIo {
         id: fileIo
+        visible: false
     }
 }
