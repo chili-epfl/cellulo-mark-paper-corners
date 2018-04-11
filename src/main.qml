@@ -108,8 +108,6 @@ ApplicationWindow {
                     model: ["Choose top-left", "Choose top-right", "Choose bottom-right", "Choose bottom-left"]
 
                     Text {
-                        id: topLeftText
-                        property int topLeft: 0
                         font.bold: choiceLayout.currentStep == index
                         text: modelData
                     }
@@ -160,16 +158,16 @@ ApplicationWindow {
         selectExisting: false
         selectMultiple: false
 
-        nameFilters: [ "All files (*)" ]
+        nameFilters: [ "JSON files (*.json)" ]
 
         onAccepted: {
             console.log("Writing output to \"" + outputFileDialog.fileUrl + "\"");
             fileIo.setPath(outputFileDialog.fileUrl);
-            fileIo.write("\"coords\" : [" + 
+            fileIo.write("{\"coords\" : [" + 
                 coordRepeater.itemAt(0).text + ", " + 
                 coordRepeater.itemAt(1).text + ", " + 
                 coordRepeater.itemAt(2).text + ", " + 
-                coordRepeater.itemAt(0).text + "]\n")
+                coordRepeater.itemAt(0).text + "]}\n")
         }
     }
 
